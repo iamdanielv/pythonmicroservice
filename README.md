@@ -10,6 +10,14 @@ python3 -m venv .venv
 
 ## Install Requirements
 
+Install FastAPI:
+
+``` shell
+pip install "fastapi[all]"
+```
+
+Install all other requirements:
+
 ``` shell
 pip install -r requirements.txt
 ```
