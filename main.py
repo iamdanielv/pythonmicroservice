@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 
 class Todo(BaseModel):
-    """Class representing a Todo"""
+    """A Todo item"""
 
     id: Optional[int] | None = 0
     title: str
@@ -16,14 +16,14 @@ class Todo(BaseModel):
 
 
 class TodoMessage(BaseModel):
-    """Class representing a Todo Message"""
+    """A Todo Message"""
 
     todo: Optional[Todo]
     message: str
 
 
 class TodoList(BaseModel):
-    """Class representing a Todo List"""
+    """Holds a Todo List"""
 
     title: str
     todos: List[Todo]
