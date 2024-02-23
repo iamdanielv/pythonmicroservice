@@ -1,7 +1,10 @@
 """A Sample FastAPI Microservice"""
 
+from enum import Enum
 import logging
+
 from typing import List, Optional
+from pydantic import BaseModel
 from fastapi import FastAPI, Response, status
 from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
@@ -40,13 +43,11 @@ class TodoList(BaseModel):
     title: str
     todos: List[Todo]
 
+class DefaultMessage(BaseModel):
+    """A Default message"""
+    message: str
 
-# get root logger
-logger = logging.getLogger(__name__)
-
-
-app = FastAPI(title="Todo API", summary="A sample FastAPI for Todos")
-
+# shared data for now
 todo_list = TodoList(
     title="Sample TODO List",
     todos=[
@@ -55,21 +56,33 @@ todo_list = TodoList(
     ],
 )
 
+class Tags(Enum):
+    """Tags to be used for documentation"""
+    ROOT = "root",
+    API = "API"
 
-@app.get("/status")
-async def get_status():
+# #########################
+# # SETUP the application #
+# #########################
+logger = logging.getLogger(__name__)
+settings = Settings()
+app = FastAPI(title=settings.app_title, summary=settings.app_summary)
+
+
+@app.get("/status", tags=[Tags.ROOT])
+async def get_status() -> DefaultMessage:
     """useful when using Docker or Kubernetes to see if the application is up"""
-    return {"status": "OK"}
+    return DefaultMessage(message= "OK")
 
 
-@app.get("/")
-async def root():
+@app.get("/", tags=[Tags.ROOT])
+async def root() -> DefaultMessage:
     """Get for the root path, this is just a Hello World for now"""
-    return {"message": "Hello World"}
+    return DefaultMessage(message="Hello World!")
 
 
 # All Todos
-@app.get("/todos")
+@app.get("/todos", tags=[Tags.API])
 async def get_todos() -> TodoList:
     """Get a list of all todos"""
     return todo_list
@@ -77,7 +90,7 @@ async def get_todos() -> TodoList:
 
 # Single Todo
 # Create
-@app.post("/todo")
+@app.post("/todo", tags=[Tags.API])
 async def create_todo(todo: Todo, response: Response) -> TodoMessage:
     """Create a single todo"""
     if todo.id is None or todo.id == 0:
@@ -97,7 +110,7 @@ async def create_todo(todo: Todo, response: Response) -> TodoMessage:
 
 
 # Retrieve
-@app.get("/todo/{todo_id}")
+@app.get("/todo/{todo_id}", tags=[Tags.API])
 async def get_todo(todo_id: int, response: Response) -> TodoMessage:
     """Get a single todo"""
     for todo in todo_list.todos:
@@ -111,7 +124,7 @@ async def get_todo(todo_id: int, response: Response) -> TodoMessage:
 
 
 # Update
-@app.put("/todo/{todo_id}")
+@app.put("/todo/{todo_id}", tags=[Tags.API])
 async def put_todo(todo_update: Todo, todo_id: int, response: Response) -> TodoMessage:
     """Update a single todo"""
     if todo_update.id != 0 and todo_id != todo_update.id:
@@ -143,7 +156,7 @@ async def put_todo(todo_update: Todo, todo_id: int, response: Response) -> TodoM
 
 
 # Delete
-@app.delete("/todo/{todo_id}")
+@app.delete("/todo/{todo_id}", tags=[Tags.API])
 async def delete_todo(todo_id: int, response: Response) -> TodoMessage:
     """Delete a single todo"""
     for todo in todo_list.todos:
