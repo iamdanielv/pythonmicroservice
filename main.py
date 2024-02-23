@@ -10,12 +10,14 @@ from pydantic_settings import BaseSettings
 
 import uvicorn
 
+
 class Settings(BaseSettings):
     """Settings for TODO App"""
+
     app_title: str = "Todo API"
     app_summary: str = "A sample FastAPI for Todos"
     host: str = "localhost"
-    port: int =  8000
+    port: int = 8000
     deploy_environment: str = "prod"
 
     if deploy_environment == "prod":
@@ -46,9 +48,12 @@ class TodoList(BaseModel):
     title: str
     todos: List[Todo]
 
+
 class DefaultMessage(BaseModel):
     """A Default message"""
+
     message: str
+
 
 # shared data for now
 todo_list = TodoList(
@@ -59,10 +64,13 @@ todo_list = TodoList(
     ],
 )
 
+
 class Tags(Enum):
     """Tags to be used for documentation"""
+
     ROOT = "root"
     API = "API"
+
 
 # #########################
 # # SETUP the application #
@@ -75,7 +83,7 @@ app = FastAPI(title=settings.app_title, summary=settings.app_summary)
 @app.get("/status", tags=[Tags.ROOT])
 async def get_status() -> DefaultMessage:
     """useful when using Docker or Kubernetes to see if the application is up"""
-    return DefaultMessage(message= "OK")
+    return DefaultMessage(message="OK")
 
 
 @app.get("/", tags=[Tags.ROOT])
