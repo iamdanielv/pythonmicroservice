@@ -1,14 +1,13 @@
 """A Sample FastAPI Microservice"""
 
-from enum import Enum
 import logging
 
-from typing import List, Optional
-from pydantic import BaseModel
 from fastapi import FastAPI, Response, status
 from pydantic_settings import BaseSettings
 
 import uvicorn
+
+from models import Tags, TodoList, Todo, DefaultMessage, TodoMessage
 
 
 class Settings(BaseSettings):
@@ -26,35 +25,6 @@ class Settings(BaseSettings):
         IS_PROD: bool = False
 
 
-class Todo(BaseModel):
-    """A Todo item"""
-
-    id: Optional[int] | None = 0
-    title: str
-    description: Optional[str] | None = ""
-    is_done: bool | None = False
-
-
-class TodoMessage(BaseModel):
-    """A Todo Message"""
-
-    todo: Optional[Todo]
-    message: str
-
-
-class TodoList(BaseModel):
-    """Holds a Todo List"""
-
-    title: str
-    todos: List[Todo]
-
-
-class DefaultMessage(BaseModel):
-    """A Default message"""
-
-    message: str
-
-
 # shared data for now
 todo_list = TodoList(
     title="Sample TODO List",
@@ -63,13 +33,6 @@ todo_list = TodoList(
         Todo(id=2, title="Create Microservice", is_done=False),
     ],
 )
-
-
-class Tags(Enum):
-    """Tags to be used for documentation"""
-
-    ROOT = "root"
-    API = "API"
 
 
 # #########################
