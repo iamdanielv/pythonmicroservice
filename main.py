@@ -3,7 +3,19 @@
 import logging
 from typing import List, Optional
 from fastapi import FastAPI, Response, status
-from pydantic import BaseModel
+from pydantic_settings import BaseSettings
+class Settings(BaseSettings):
+    """Settings for TODO App"""
+    app_title: str = "Todo API"
+    app_summary: str = "A sample FastAPI for Todos"
+    host: str = "localhost"
+    port: int =  8000
+    deploy_environment: str = "prod"
+
+    if deploy_environment == "prod":
+        IS_PROD: bool = True
+    else:
+        IS_PROD: bool = False
 
 
 class Todo(BaseModel):
