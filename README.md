@@ -24,6 +24,14 @@ pip install -r requirements.txt
 
 ## Start the server
 
+Can now run the server by just running `main.py`:
+
+``` shell
+python3 main.py
+```
+
+Alternate way of running:
+
 ``` shell
 uvicorn main:app --reload
 ```

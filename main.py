@@ -7,6 +7,9 @@ from typing import List, Optional
 from pydantic import BaseModel
 from fastapi import FastAPI, Response, status
 from pydantic_settings import BaseSettings
+
+import uvicorn
+
 class Settings(BaseSettings):
     """Settings for TODO App"""
     app_title: str = "Todo API"
@@ -170,3 +173,18 @@ async def delete_todo(todo_id: int, response: Response) -> TodoMessage:
     # we iterated through the list and didn't find the requested id
     response.status_code = status.HTTP_404_NOT_FOUND
     return TodoMessage(todo=None, message=f"Todo {todo_id} not found")
+
+
+if __name__ == "__main__":
+    # we only reload when not running in prod
+    RELOAD = not settings.IS_PROD
+    # start the application
+    logger.debug(
+        "Starting %s on %s:%s and reload:%s",
+        settings.app_title,
+        settings.host,
+        settings.port,
+        RELOAD,
+    )
+
+    uvicorn.run(app, host=settings.host, port=settings.port, reload=RELOAD)
