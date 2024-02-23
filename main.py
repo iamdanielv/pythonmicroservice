@@ -61,7 +61,7 @@ todo_list = TodoList(
 
 class Tags(Enum):
     """Tags to be used for documentation"""
-    ROOT = "root",
+    ROOT = "root"
     API = "API"
 
 # #########################
