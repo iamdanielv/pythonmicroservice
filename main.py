@@ -10,7 +10,8 @@ class Todo(BaseModel):
     """Class representing a Todo"""
 
     id: Optional[int] | None = 0
-    item: str
+    title: str
+    description: Optional[str] | None = ""
     is_done: bool | None = False
 
 
@@ -37,8 +38,8 @@ app = FastAPI(title="Todo API", summary="A sample FastAPI for Todos")
 todo_list = TodoList(
     title="Sample TODO List",
     todos=[
-        Todo(id=1, item="Install Python", is_done=True),
-        Todo(id=2, item="Create Microservice", is_done=False),
+        Todo(id=1, title="Install Python", is_done=True),
+        Todo(id=2, title="Create Microservice", is_done=False),
     ],
 )
 
@@ -117,8 +118,10 @@ async def put_todo(todo_update: Todo, todo_id: int, response: Response) -> TodoM
             # we do not allow updating/changing the id
             if todo_update.is_done is not None:
                 todo.is_done = todo_update.is_done
-            if todo_update.item is not None:
-                todo.item = todo_update.item
+            if todo_update.title is not None:
+                todo.title = todo_update.title
+            if todo_update.description is not None:
+                todo.description = todo_update.description
 
             return TodoMessage(todo=todo, message=f"OK, updated Todo {todo_id}")
 
