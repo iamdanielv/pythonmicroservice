@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 class Tags(Enum):
     """Tags to be used for documentation"""
-
+    APP_NAME = "TODOAPP"
     ROOT = "root"
     API = "API"
 

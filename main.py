@@ -1,28 +1,14 @@
 """A Sample FastAPI Microservice"""
 
 import logging
+from logging.config import dictConfig
 
 from fastapi import FastAPI, Response, status
-from pydantic_settings import BaseSettings
 
 import uvicorn
+from config import LogConfig, Settings
 
 from models import Tags, TodoList, Todo, DefaultMessage, TodoMessage
-
-
-class Settings(BaseSettings):
-    """Settings for TODO App"""
-
-    app_title: str = "Todo API"
-    app_summary: str = "A sample FastAPI for Todos"
-    host: str = "localhost"
-    port: int = 8000
-    deploy_environment: str = "prod"
-
-    if deploy_environment == "prod":
-        IS_PROD: bool = True
-    else:
-        IS_PROD: bool = False
 
 
 # shared data for now
@@ -38,7 +24,9 @@ todo_list = TodoList(
 # #########################
 # # SETUP the application #
 # #########################
-logger = logging.getLogger(__name__)
+dictConfig(LogConfig().model_dump())
+logger = logging.getLogger(Tags.APP_NAME.value)
+
 settings = Settings()
 app = FastAPI(title=settings.app_title, summary=settings.app_summary)
 
