@@ -67,6 +67,7 @@ env: ##@ setup a virtual environment
     	fi; \
 		echo "*" > $(VENV)/.gitignore ; \
 	fi
+	)
 	@$(call check_venv)
 	@printf "Activate $(C_BLUE)$(VENV)$(T_RESET) "
 	@. $(VENV)/bin/activate
@@ -97,11 +98,13 @@ env: ##@ setup a virtual environment
 	printf "  source $(VENV)/bin/activate \n\n"
 
 show-env: ##@ Show paths used by python
-	@if [ -d "$(VENV)" ]; then \
+	@(
+	if [ -d "$(VENV)" ]; then \
         $(call check_venv); \
 	else \
 		printf "$(T_INFO_ICON) $(C_BLUE)$(VENV)$(T_RESET) Not Found\n"; \
     fi
+	)
 	@printf "current python:\n  "
 	@which python3
 
