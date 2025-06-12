@@ -45,27 +45,37 @@ The make file will tell you how to activate the environment. In my case it print
 
 Install FastAPI:
 
-``` shell
+```shell
 pip install "fastapi[all]"
 ```
 
 Install all other requirements:
 
-``` shell
+```shell
 pip install -r requirements.txt
 ```
 
+### Using makefile way of installing dependencies
+
+If you used the command:
+
+```shell
+make env
+```
+
+all of the requirements should already be installed for you. Just make sure that you have activated the environment.
+
 ## Start the server
 
-Can now run the server by just running `main.py`:
+To start the server, you can run the following command in your terminal:
 
-``` shell
+```shell
 python3 main.py
 ```
 
 Alternate way of running:
 
-``` shell
+```shell
 uvicorn main:app --reload
 ```
 
