@@ -94,7 +94,7 @@ env: ##@ setup a virtual environment
 		printf "$(T_OK_ICON)\n"; \
     fi
 
-	printf "\n$(T_INFO_ICON) To $(C_GREEN)enable$(T_RESET) the virtual environment, type:\n"
+	printf "\n$(T_INFO_ICON) To $(C_GREEN)activate$(T_RESET) the virtual environment, type:\n"
 	printf "  source $(VENV)/bin/activate \n\n"
 
 show-env: ##@ Show paths used by python
@@ -107,6 +107,8 @@ show-env: ##@ Show paths used by python
 	)
 	@printf "current python:\n  "
 	@which python3
+	printf "\n$(T_INFO_ICON) To $(C_GREEN)activate$(T_RESET) the virtual environment, type:\n"
+	printf "  source $(VENV)/bin/activate \n\n"
 
 clean: ##@ delete the .venv environment
 	@(if [ -d "$(VENV)" ]; then \
