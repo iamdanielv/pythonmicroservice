@@ -11,11 +11,37 @@ Before you begin, ensure you have the following installed:
 
 ## Create a virtual environment
 
-``` shell
+To create an environment from scratch, you can run the following command in your terminal:
+
+```shell
 python3 -m venv .venv
 ```
 
-## Install Requirements
+followed by activating the environment:
+
+```shell
+source .venv/bin/activate
+```
+
+Alternative way of creating an environment is to use the makefile:
+
+```shell
+make env
+```
+
+The make file will tell you how to activate the environment. In my case it printed out:
+
+```shell
+[i] To activate the virtual environment, type:
+  source pythonmicroservice.venv/bin/activate 
+```
+
+## Install Application Requirements
+
+### Manual way of installing dependencies
+
+> [!NOTE]  
+> You should **activate** your virtual environment before installing dependencies.
 
 Install FastAPI:
 
