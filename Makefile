@@ -120,8 +120,9 @@ clean: ##@ delete the .venv environment
 
 test: ##@ Run unit tests
 	@printf "Running $(C_YELLOW)unit tests$(T_RESET)...\n"
-	@pytest
+	@pytest -v tests/
+ 
 
 run: ##@ Run the application
 	@printf "$(C_BLUE)Running the application$(T_RESET)...\n"
-	@uvicorn main:app --reload
+	@uvicorn src.main:app --reload

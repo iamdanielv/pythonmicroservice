@@ -8,8 +8,8 @@ from typing import Optional
 
 import uvicorn
 
-from config import Settings, LogConfig
-from models import Tags, TodoList, Todo, TodoMessage, DefaultMessage
+from src.config import Settings, LogConfig
+from src.models import Tags, TodoList, Todo, TodoMessage, DefaultMessage
 
 # Initialize configuration
 settings = Settings()

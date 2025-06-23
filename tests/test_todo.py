@@ -2,13 +2,12 @@
 import sys
 from pathlib import Path
 
-# Add the root directory to the Python path
-sys.path.append(str(Path(__file__).parent.parent))
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import pytest
 from fastapi.testclient import TestClient
 from fastapi import status
-from main import app
+from src.main import app
 
 client = TestClient(app)
 
