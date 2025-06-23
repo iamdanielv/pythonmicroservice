@@ -71,3 +71,9 @@ async def test_delete_todo():
     response = client.delete("/todo/1")
     assert response.status_code == status.HTTP_200_OK
     assert response.json()["message"] == "Removed Todo 1"
+
+@pytest.mark.asyncio
+async def test_delete_nonexistent_todo():
+    response = client.delete("/todo/999")
+    assert response.status_code == 404
+    assert "Todo 999 not found" in response.text
