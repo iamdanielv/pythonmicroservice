@@ -1,50 +1,56 @@
 """Configuration for TODO API"""
 
-from pydantic import BaseModel
-from pydantic_settings import BaseSettings
-
-from models import Tags
+import logging
+from logging.config import dictConfig
 
 
-class Settings(BaseSettings):
+class Settings:
     """Settings for TODO App"""
 
-    app_title: str = "Todo API"
-    app_summary: str = "A sample FastAPI for Todos"
+    title: str = "Todo API"
+    summary: str = "FastAPI Todos"
     host: str = "localhost"
     port: int = 8000
-    deploy_environment: str = "prod"
+    environment: str = "dev"
 
-    if deploy_environment == "prod":
-        IS_PROD: bool = True
-    else:
-        IS_PROD: bool = False
+    @property
+    def is_prod(self) -> bool:
+        return self.environment.lower() == "prod"
 
 
-class LogConfig(BaseModel):
+class LogConfig:
     """Logging config"""
 
-    LOGGER_NAME: str = Tags.APP_NAME.value
-    LOG_FORMAT: str = "%(levelprefix)s | %(asctime)s | %(message)s"
-    LOG_LEVEL: str = "DEBUG"
+    LOGGER_NAME = "todo_app"
+    LOG_FORMAT = "%(asctime)s | %(levelname)s | %(message)s"
+    LOG_LEVEL = "INFO"
 
-    # Logging config
-    version: int = 1
-    disable_existing_loggers: bool = False
-    formatters: dict = {
+    def __init__(self):
+        self.dict_config = {
+            "version": 1,
+            "disable_existing_loggers": False,
+            "formatters": {
         "default": {
             "()": "uvicorn.logging.DefaultFormatter",
-            "fmt": LOG_FORMAT,
+                    "fmt": self.LOG_FORMAT,
             "datefmt": "%Y-%m-%d %H:%M:%S",
         },
-    }
-    handlers: dict = {
-        "default": {
-            "formatter": "default",
-            "class": "logging.StreamHandler",
-            "stream": "ext://sys.stderr",
         },
+            "handlers": {
+                "default": {
+                    "formatter": "default",
+                    "class": "logging.StreamHandler",
+                    "stream": "ext://sys.stderr",
+                },
+            },
+            "loggers": {
+                self.LOGGER_NAME: {
+                    "handlers": ["default"],
+                    "level": self.LOG_LEVEL,
+                    "propagate": False,
+                },
+            },
     }
-    loggers: dict = {
-        LOGGER_NAME: {"handlers": ["default"], "level": LOG_LEVEL},
-    }
+
+    def configure(self):
+        dictConfig(self.dict_config)
