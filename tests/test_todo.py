@@ -76,3 +76,40 @@ async def test_delete_nonexistent_todo():
     response = client.delete("/todo/999")
     assert response.status_code == 404
     assert "Todo 999 not found" in response.text
+
+@pytest.mark.asyncio
+async def test_update_todo_description():
+    # Add a new todo first
+    response = client.post("/todo", json={"title": "Task with Description"})
+    assert response.status_code == status.HTTP_201_CREATED
+    # get the id of the newly created todo
+    todo_id = response.json()["todo"]["id"]
+    # update the description
+    response = client.put(f"/todo/{todo_id}", json={"id" : todo_id, "title": "Updated Task", "description": "New Description"})
+    assert response.status_code == status.HTTP_200_OK
+    assert "OK, updated Todo" in response.json()["message"]
+    assert response.json()["todo"]["description"] == "New Description"
+
+@pytest.mark.asyncio
+async def test_create_todo_negative_id():
+    response = client.post("/todo", json={"id": -1, "title": "Invalid ID"})
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "ID must be 0 or None" in response.text
+
+@pytest.mark.asyncio
+async def test_create_todo_invalid_id_type():
+    response = client.post("/todo", json={"id": "invalid", "title": "Invalid ID"})
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "Input should be a valid integer" in response.text
+
+@pytest.mark.asyncio
+async def test_get_todo_zero():
+    response = client.get("/todo/0")
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert "Todo 0 not found" in response.text
+
+@pytest.mark.asyncio
+async def test_update_todo_zero():
+    response = client.put("/todo/0", json={"title": "Updated Zero"})
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert "Todo 0 not found" in response.text
