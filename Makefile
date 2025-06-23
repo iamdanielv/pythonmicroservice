@@ -26,7 +26,7 @@ VENV_PYTHON := $(VENV)/bin/python
 QUIET_PIP := pip -q --exists-action i
 
 .DEFAULT_GOAL := help
-.PHONY: help env show-env clean
+.PHONY: help env show-env clean test
 
 define check_venv
 	printf "$(C_BLUE)$(VENV)$(T_RESET)"
@@ -117,3 +117,7 @@ clean: ##@ delete the .venv environment
     else \
 		printf "$(T_INFO_ICON) $(C_BLUE)$(VENV)$(T_RESET) Not Found, nothing to do\n"; \
 	fi)
+
+test: ##@ Run unit tests
+	@printf "Running $(C_YELLOW)unit tests$(T_RESET)...\n"
+	@pytest

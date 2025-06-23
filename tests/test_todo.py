@@ -1,0 +1,73 @@
+# test_todo.py
+import sys
+from pathlib import Path
+
+# Add the root directory to the Python path
+sys.path.append(str(Path(__file__).parent.parent))
+
+import pytest
+from fastapi.testclient import TestClient
+from fastapi import status
+from main import app
+
+client = TestClient(app)
+
+@pytest.mark.asyncio
+async def test_get_status():
+    response = client.get("/status")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {"message": "OK"}
+
+@pytest.mark.asyncio
+async def test_root():
+    response = client.get("/")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json() == {"message": "Hello World!"}
+
+@pytest.mark.asyncio
+async def test_get_todos():
+    response = client.get("/todos")
+    assert response.status_code == status.HTTP_200_OK
+    assert isinstance(response.json(), dict)
+
+@pytest.mark.asyncio
+async def test_create_todo():
+    response = client.post("/todo", json={"title": "New Task"})
+    assert response.status_code == status.HTTP_201_CREATED
+    assert "Added new todo with id" in response.json()["message"]
+
+@pytest.mark.asyncio
+async def test_create_todo_invalid_id():
+    response = client.post("/todo", json={"id": 1, "title": "Invalid ID"})
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "ID must be 0 or None" in response.text
+
+@pytest.mark.asyncio
+async def test_get_todo():
+    response = client.get("/todo/1")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["message"] == "OK"
+
+@pytest.mark.asyncio
+async def test_get_todo_not_found():
+    response = client.get("/todo/999")
+    assert response.status_code == status.HTTP_404_NOT_FOUND
+    assert "Todo 999 not found" in response.text
+
+@pytest.mark.asyncio
+async def test_update_todo():
+    response = client.put("/todo/1", json={"title": "Updated Task"})
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["message"] == "OK, updated Todo 1"
+
+@pytest.mark.asyncio
+async def test_update_todo_invalid_id():
+    response = client.put("/todo/1", json={"id": 2, "title": "Invalid ID"})
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Todo id from URL: 1 does not match body id: 2" in response.text
+
+@pytest.mark.asyncio
+async def test_delete_todo():
+    response = client.delete("/todo/1")
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["message"] == "Removed Todo 1"
