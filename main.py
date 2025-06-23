@@ -66,7 +66,7 @@ async def create_todo(todo: Todo, response: Response) -> TodoMessage:
     # we passed checks
     todo_list.todos.append(todo)
     logger.debug("created a todo: %s ", todo)
-    response.status_code = status.HTTP_200_OK
+    response.status_code = status.HTTP_201_CREATED
     return TodoMessage(todo=todo, message=f"Added new todo with id {todo.id}")
 
 
