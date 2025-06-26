@@ -172,3 +172,35 @@ async def test_update_todo_with_float_id():
     response = client.put(f"/todo/2.5", json={"id": 2.5, "title": "Invalid ID"})
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     assert "Input should be a valid integer" in response.text
+
+@pytest.mark.asyncio
+async def test_create_todo_missing_title():
+    response = client.post("/todo", json={"id": 0})
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "Field required" in response.text
+
+@pytest.mark.asyncio
+async def test_update_todo_missing_title():
+    response = client.put("/todo/1", json={"id": 1, "description": "New Desc"})
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "Field required" in response.text
+
+@pytest.mark.asyncio
+async def test_update_todo_invalid_description():
+    response = client.put("/todo/1", json={"id": 1, "title": "Updated", "description": 123})
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "Input should be a valid string" in response.text
+
+@pytest.mark.asyncio
+async def test_update_todo_invalid_is_done():
+    response = client.post("/todo", json={"title": "Task to Update"})
+    todo_id = response.json()["todo"]["id"]
+    response = client.put(f"/todo/{todo_id}", json={"id": todo_id, "title": "Updated", "is_done": "makeit"})
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "Input should be a valid boolean" in response.text
+
+@pytest.mark.asyncio
+async def test_get_todo_float_id():
+    response = client.get("/todo/1.5")
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "Input should be a valid integer" in response.text
