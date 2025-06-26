@@ -1,6 +1,6 @@
 """A Sample FastAPI Microservice"""
 
-import logging.config
+import logging
 
 from fastapi import FastAPI, HTTPException, Response, status
 
@@ -144,5 +144,7 @@ async def delete_todo(todo_id: int, response: Response) -> TodoMessage:
 
 
 if __name__ == "__main__":
-    RELOAD = not settings.IS_PROD
+    RELOAD = not settings.is_prod
+
+    print(f"App: {settings.title} -- Host: {settings.host}:{settings.port} Reload: {RELOAD}")
     uvicorn.run(app, host=settings.host, port=settings.port, reload=RELOAD)
