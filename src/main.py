@@ -146,5 +146,7 @@ async def delete_todo(todo_id: int, response: Response) -> TodoMessage:
 if __name__ == "__main__":
     RELOAD = not settings.is_prod
 
-    print(f"App: {settings.title} -- Host: {settings.host}:{settings.port} Reload: {RELOAD}")
+    print(
+        f"App: {settings.title} -- Host: {settings.host}:{settings.port} Reload: {RELOAD}"
+    )
     uvicorn.run(app, host=settings.host, port=settings.port, reload=RELOAD)
