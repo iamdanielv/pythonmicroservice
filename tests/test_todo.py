@@ -137,3 +137,38 @@ async def test_delete_todo_string_id():
     response = client.delete("/todo/abc")
     assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
     assert "Input should be a valid integer" in response.text
+
+@pytest.mark.asyncio
+async def test_create_todo_with_description():
+    response = client.post("/todo", json={"title": "Task with Description", "description": "New Description"})
+    assert response.status_code == status.HTTP_201_CREATED
+    assert "Added new todo with id" in response.json()["message"]
+    assert response.json()["todo"]["description"] == "New Description"
+
+@pytest.mark.asyncio
+async def test_update_todo_only_description():
+    response = client.post("/todo", json={"title": "Task to Update", "description": "Old Desc"})
+    todo_id = response.json()["todo"]["id"]
+    response = client.put(f"/todo/{todo_id}", json={"id": todo_id, "title": "Task to Update", "description": "New Desc"})
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["todo"]["description"] == "New Desc"
+
+@pytest.mark.asyncio
+async def test_update_todo_only_is_done():
+    response = client.post("/todo", json={"title": "Task to Update"})
+    todo_id = response.json()["todo"]["id"]
+    response = client.put(f"/todo/{todo_id}", json={"id": todo_id, "title": "Task to Update", "is_done": True})
+    assert response.status_code == status.HTTP_200_OK
+    assert response.json()["todo"]["is_done"] is True
+
+@pytest.mark.asyncio
+async def test_create_todo_with_float_id():
+    response = client.post("/todo", json={"id": 1.0, "title": "Invalid ID"})
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "ID must be 0 or None" in response.text
+
+@pytest.mark.asyncio
+async def test_update_todo_with_float_id():
+    response = client.put(f"/todo/2.5", json={"id": 2.5, "title": "Invalid ID"})
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "Input should be a valid integer" in response.text
