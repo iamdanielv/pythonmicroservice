@@ -2,9 +2,7 @@
 
 import logging.config
 
-from fastapi import FastAPI, HTTPException, Depends, Response, status
-from fastapi.responses import JSONResponse
-from typing import Optional
+from fastapi import FastAPI, HTTPException, Response, status
 
 import uvicorn
 

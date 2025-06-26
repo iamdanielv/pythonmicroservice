@@ -1,6 +1,5 @@
 """Configuration for TODO API"""
 
-import logging
 from logging.config import dictConfig
 
 
