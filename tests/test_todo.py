@@ -113,3 +113,27 @@ async def test_update_todo_zero():
     response = client.put("/todo/0", json={"title": "Updated Zero"})
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert "Todo 0 not found" in response.text
+
+@pytest.mark.asyncio
+async def test_get_todo_string_id():
+    response = client.get("/todo/abc")
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "Input should be a valid integer" in response.text
+
+@pytest.mark.asyncio
+async def test_update_todo_invalid_id():
+    response = client.put("/todo/1", json={"id": 2, "title": "Invalid ID"})
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    assert "Todo id from URL: 1 does not match body id: 2" in response.text
+
+@pytest.mark.asyncio
+async def test_update_todo_string_id():
+    response = client.put("/todo/1", json={"id": "abc", "title": "Invalid ID"})
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "Input should be a valid integer" in response.text
+
+@pytest.mark.asyncio
+async def test_delete_todo_string_id():
+    response = client.delete("/todo/abc")
+    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
+    assert "Input should be a valid integer" in response.text
