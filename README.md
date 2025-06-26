@@ -71,13 +71,13 @@ all of the requirements should already be installed for you. Just make sure that
 To start the server, you can run the following command in your terminal:
 
 ```shell
-python3 main.py
+uvicorn src.main:app --reload
 ```
 
-Alternate way of running:
+Or you can use the makefile target
 
 ```shell
-uvicorn src.main:app --reload
+make run
 ```
 
 ## View Docs
