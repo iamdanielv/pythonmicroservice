@@ -30,26 +30,31 @@ todo_list = TodoList(
     ],
 )
 
+
 # #########################
 # # SETUP the application #
 # #########################
 def get_settings():
     return settings
 
+
 @app.get("/status")
 async def get_status():
     """useful when using Docker or Kubernetes to see if the application is up"""
     return DefaultMessage(message="OK")
+
 
 @app.get("/")
 async def root():
     """Get for the root path, this is just a Hello World for now"""
     return DefaultMessage(message="Hello World!")
 
+
 @app.get("/todos", tags=[Tags.API])
 async def get_todos() -> TodoList:
     """Get a list of all todos"""
     return todo_list
+
 
 # Create
 @app.post("/todo", tags=[Tags.API])
@@ -61,7 +66,9 @@ async def create_todo(todo: Todo, response: Response) -> TodoMessage:
         logger.debug("got id = None or 0, created new id %s", todo.id)
     else:
         logger.error("got an id = %s, NOT ALLOWED", todo.id)
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID must be 0 or None")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="ID must be 0 or None"
+        )
 
     # we passed checks
     todo_list.todos.append(todo)
@@ -75,7 +82,10 @@ async def create_todo(todo: Todo, response: Response) -> TodoMessage:
 async def get_todo(todo_id: int, response: Response) -> TodoMessage:
     """Get a single todo"""
     if todo_id < 1:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID must be a positive integer")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="ID must be a positive integer",
+        )
 
     for todo in todo_list.todos:
         if todo.id == todo_id:
@@ -83,7 +93,10 @@ async def get_todo(todo_id: int, response: Response) -> TodoMessage:
             return TodoMessage(todo=todo, message="OK")
 
     # we iterated through the list and didn't find the requested id
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Todo {todo_id} not found")
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, detail=f"Todo {todo_id} not found"
+    )
+
 
 # Update
 @app.put("/todo/{todo_id}", tags=[Tags.API])
@@ -91,7 +104,10 @@ async def put_todo(todo_update: Todo, todo_id: int, response: Response) -> TodoM
     """Update a single todo"""
     if todo_update.id != 0 and todo_id != todo_update.id:
         logger.debug("Todo id %s does not match body id %s", todo_id, todo_update.id)
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Todo id from URL: {todo_id} does not match body id: {todo_update.id}")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Todo id from URL: {todo_id} does not match body id: {todo_update.id}",
+        )
 
     for todo in todo_list.todos:
         if todo.id == todo_id:
@@ -107,7 +123,10 @@ async def put_todo(todo_update: Todo, todo_id: int, response: Response) -> TodoM
             return TodoMessage(todo=todo, message=f"OK, updated Todo {todo_id}")
 
     # we iterated through the list and didn't find the requested id
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Todo {todo_id} not found")
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, detail=f"Todo {todo_id} not found"
+    )
+
 
 # Delete
 @app.delete("/todo/{todo_id}", tags=[Tags.API])
@@ -121,7 +140,10 @@ async def delete_todo(todo_id: int, response: Response) -> TodoMessage:
             return TodoMessage(todo=todo, message=f"Removed Todo {todo_id}")
 
     # we iterated through the list and didn't find the requested id
-    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Todo {todo_id} not found")
+    raise HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, detail=f"Todo {todo_id} not found"
+    )
+
 
 if __name__ == "__main__":
     RELOAD = not settings.IS_PROD

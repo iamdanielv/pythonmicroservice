@@ -165,22 +165,36 @@ def test_update_todo(todo_id, payload, expected_status, expected_message):
     assert response.status_code == expected_status
     assert expected_message in response.text
 
+
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "payload, expected_status, expected_message",
     [
-        ({"title": "Updated Task", "description": "New Description"},
-            status.HTTP_200_OK,"OK, updated Todo"),
-        ({"description": "New Desc"}, status.HTTP_422_UNPROCESSABLE_ENTITY, "Field required"),
+        (
+            {"title": "Updated Task", "description": "New Description"},
+            status.HTTP_200_OK,
+            "OK, updated Todo",
+        ),
+        (
+            {"description": "New Desc"},
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Field required",
+        ),
         ({"is_done": True}, status.HTTP_422_UNPROCESSABLE_ENTITY, "Field required"),
-        ({"title": "Todo with Description", "is_done": True}, status.HTTP_200_OK, "OK, updated Todo"),
-        ({"is_done": "makeit"}, status.HTTP_422_UNPROCESSABLE_ENTITY,
-            "Field required"),
-        ({"title": "Todo with Description", "is_done": "makeit"}, status.HTTP_422_UNPROCESSABLE_ENTITY,
-            "Input should be a valid boolean"),
+        (
+            {"title": "Todo with Description", "is_done": True},
+            status.HTTP_200_OK,
+            "OK, updated Todo",
+        ),
+        ({"is_done": "makeit"}, status.HTTP_422_UNPROCESSABLE_ENTITY, "Field required"),
+        (
+            {"title": "Todo with Description", "is_done": "makeit"},
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Input should be a valid boolean",
+        ),
     ],
 )
-async def test_create_and_update_todo(payload, expected_status,expected_message):
+async def test_create_and_update_todo(payload, expected_status, expected_message):
     # Create a new todo to update
     response = client.post("/todo", json={"title": "Todo with Description"})
     assert response.status_code == status.HTTP_201_CREATED

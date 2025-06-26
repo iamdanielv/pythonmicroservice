@@ -30,12 +30,12 @@ class LogConfig:
             "version": 1,
             "disable_existing_loggers": False,
             "formatters": {
-        "default": {
-            "()": "uvicorn.logging.DefaultFormatter",
+                "default": {
+                    "()": "uvicorn.logging.DefaultFormatter",
                     "fmt": self.LOG_FORMAT,
-            "datefmt": "%Y-%m-%d %H:%M:%S",
-        },
-        },
+                    "datefmt": "%Y-%m-%d %H:%M:%S",
+                },
+            },
             "handlers": {
                 "default": {
                     "formatter": "default",
@@ -50,7 +50,7 @@ class LogConfig:
                     "propagate": False,
                 },
             },
-    }
+        }
 
     def configure(self):
         dictConfig(self.dict_config)
