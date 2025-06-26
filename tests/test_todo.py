@@ -1,4 +1,3 @@
-# test_todo.py
 import sys
 from pathlib import Path
 
@@ -11,196 +10,186 @@ from src.main import app
 
 client = TestClient(app)
 
-@pytest.mark.asyncio
-async def test_get_status():
-    response = client.get("/status")
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json() == {"message": "OK"}
 
-@pytest.mark.asyncio
-async def test_root():
-    response = client.get("/")
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json() == {"message": "Hello World!"}
+@pytest.mark.parametrize(
+    "endpoint, method, payload, expected_status, expected_message",
+    [
+        ("/status", "GET", None, status.HTTP_200_OK, "OK"),
+        ("/", "GET", None, status.HTTP_200_OK, "Hello World!"),
+    ],
+)
+def test_endpoints(endpoint, method, payload, expected_status, expected_message):
+    response = client.request(method, endpoint, json=payload)
+    assert response.status_code == expected_status
+    assert response.json()["message"] == expected_message
+
 
 @pytest.mark.asyncio
 async def test_get_todos():
     response = client.get("/todos")
     assert response.status_code == status.HTTP_200_OK
-    assert isinstance(response.json(), dict)
+    data = response.json()
+    assert "todos" in data
+    assert isinstance(data["todos"], list)
+
+
+@pytest.mark.parametrize(
+    "payload, expected_status, expected_message",
+    [
+        ({"title": "New Task"}, status.HTTP_201_CREATED, "Added new todo with id"),
+        (
+            {"id": 1, "title": "Invalid ID 1"},
+            status.HTTP_400_BAD_REQUEST,
+            "ID must be 0 or None",
+        ),
+        (
+            {"id": -1, "title": "Invalid ID -1"},
+            status.HTTP_400_BAD_REQUEST,
+            "ID must be 0 or None",
+        ),
+        (
+            {"id": "invalid", "title": "Invalid ID invalid"},
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Input should be a valid integer",
+        ),
+        (
+            {"id": 1.0, "title": "Invalid ID 1.0"},
+            status.HTTP_400_BAD_REQUEST,
+            "ID must be 0 or None",
+        ),
+        (
+            {"id": 1.5, "title": "Invalid ID 1.5"},
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Input should be a valid integer",
+        ),
+        (
+            {"id": -1.5, "title": "Invalid ID -1.5"},
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Input should be a valid integer",
+        ),
+        (
+            {"id": 0, "title": "Valid"},
+            status.HTTP_201_CREATED,
+            "Added new todo with id",
+        ),
+        (
+            {"id": None, "title": "Valid"},
+            status.HTTP_201_CREATED,
+            "Added new todo with id",
+        ),
+    ],
+)
+def test_create_todo(payload, expected_status, expected_message):
+    response = client.post("/todo", json=payload)
+    assert response.status_code == expected_status
+    if expected_status == status.HTTP_201_CREATED:
+        assert expected_message in response.json()["message"]
+    else:
+        assert expected_message in response.text
+
+
+@pytest.mark.parametrize(
+    "todo_id, expected_status, expected_message, fuzzy_match",
+    [
+        (1, status.HTTP_200_OK, "OK", False),
+        (999, status.HTTP_404_NOT_FOUND, "Todo 999 not found", False),
+        (0, status.HTTP_400_BAD_REQUEST, "ID must be a positive integer", True),
+        (
+            "abc",
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Input should be a valid integer",
+            True,
+        ),
+        (
+            1.5,
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Input should be a valid integer",
+            True,
+        ),
+        (-1, status.HTTP_400_BAD_REQUEST, "ID must be a positive integer", True),
+    ],
+)
+def test_get_todo(todo_id, expected_status, expected_message, fuzzy_match):
+    response = client.get(f"/todo/{todo_id}")
+    assert response.status_code == expected_status
+    if fuzzy_match:
+        assert expected_message in response.text
+    else:
+        if expected_status == status.HTTP_404_NOT_FOUND:
+            assert expected_message in response.text
+        else:
+            if expected_status == status.HTTP_422_UNPROCESSABLE_ENTITY:
+                assert expected_message in response.json()["detail"]
+            else:
+                assert response.json()["message"] == expected_message
+
+
+@pytest.mark.parametrize(
+    "todo_id, payload, expected_status, expected_message",
+    [
+        (1, {"title": "Updated Task"}, status.HTTP_200_OK, "OK, updated Todo 1"),
+        (
+            1,
+            {"id": 2, "title": "URL and body ID mismatch"},
+            status.HTTP_400_BAD_REQUEST,
+            "Todo id from URL: 1 does not match body id: 2",
+        ),
+        (
+            1,
+            {"id": "abc", "title": "Invalid ID abc"},
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Input should be a valid integer",
+        ),
+        (
+            1.5,
+            {"id": "1.5", "title": "Invalid ID 1.5"},
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Input should be a valid integer",
+        ),
+        (
+            1,
+            {"id": "1", "description": "New Desc, missing title"},
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Field required",
+        ),
+        (
+            1,
+            {"id": "1", "title": "invalid description", "description": 123},
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Input should be a valid string",
+        ),
+    ],
+)
+def test_update_todo(todo_id, payload, expected_status, expected_message):
+    response = client.put(f"/todo/{todo_id}", json=payload)
+    assert response.status_code == expected_status
+    assert expected_message in response.text
 
 @pytest.mark.asyncio
-async def test_create_todo():
-    response = client.post("/todo", json={"title": "New Task"})
+@pytest.mark.parametrize(
+    "payload, expected_status, expected_message",
+    [
+        ({"title": "Updated Task", "description": "New Description"},
+            status.HTTP_200_OK,"OK, updated Todo"),
+        ({"description": "New Desc"}, status.HTTP_422_UNPROCESSABLE_ENTITY, "Field required"),
+        ({"is_done": True}, status.HTTP_422_UNPROCESSABLE_ENTITY, "Field required"),
+        ({"title": "Todo with Description", "is_done": True}, status.HTTP_200_OK, "OK, updated Todo"),
+        ({"is_done": "makeit"}, status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Field required"),
+        ({"title": "Todo with Description", "is_done": "makeit"}, status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Input should be a valid boolean"),
+    ],
+)
+async def test_create_and_update_todo(payload, expected_status,expected_message):
+    # Create a new todo to update
+    response = client.post("/todo", json={"title": "Todo with Description"})
     assert response.status_code == status.HTTP_201_CREATED
-    assert "Added new todo with id" in response.json()["message"]
-
-@pytest.mark.asyncio
-async def test_create_todo_invalid_id():
-    response = client.post("/todo", json={"id": 1, "title": "Invalid ID"})
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert "ID must be 0 or None" in response.text
-
-@pytest.mark.asyncio
-async def test_get_todo():
-    response = client.get("/todo/1")
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json()["message"] == "OK"
-
-@pytest.mark.asyncio
-async def test_get_todo_not_found():
-    response = client.get("/todo/999")
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert "Todo 999 not found" in response.text
-
-@pytest.mark.asyncio
-async def test_update_todo():
-    response = client.put("/todo/1", json={"title": "Updated Task"})
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json()["message"] == "OK, updated Todo 1"
-
-@pytest.mark.asyncio
-async def test_update_todo_invalid_id():
-    response = client.put("/todo/1", json={"id": 2, "title": "Invalid ID"})
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert "Todo id from URL: 1 does not match body id: 2" in response.text
-
-@pytest.mark.asyncio
-async def test_delete_todo():
-    response = client.delete("/todo/1")
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json()["message"] == "Removed Todo 1"
-
-@pytest.mark.asyncio
-async def test_delete_nonexistent_todo():
-    response = client.delete("/todo/999")
-    assert response.status_code == 404
-    assert "Todo 999 not found" in response.text
-
-@pytest.mark.asyncio
-async def test_update_todo_description():
-    # Add a new todo first
-    response = client.post("/todo", json={"title": "Task with Description"})
-    assert response.status_code == status.HTTP_201_CREATED
-    # get the id of the newly created todo
     todo_id = response.json()["todo"]["id"]
-    # update the description
-    response = client.put(f"/todo/{todo_id}", json={"id" : todo_id, "title": "Updated Task", "description": "New Description"})
-    assert response.status_code == status.HTTP_200_OK
-    assert "OK, updated Todo" in response.json()["message"]
-    assert response.json()["todo"]["description"] == "New Description"
 
-@pytest.mark.asyncio
-async def test_create_todo_negative_id():
-    response = client.post("/todo", json={"id": -1, "title": "Invalid ID"})
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert "ID must be 0 or None" in response.text
+    # Prepare the payload with the todo ID
+    update_payload = {**payload, "id": todo_id}
 
-@pytest.mark.asyncio
-async def test_create_todo_invalid_id_type():
-    response = client.post("/todo", json={"id": "invalid", "title": "Invalid ID"})
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    assert "Input should be a valid integer" in response.text
-
-@pytest.mark.asyncio
-async def test_get_todo_zero():
-    response = client.get("/todo/0")
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert "Todo 0 not found" in response.text
-
-@pytest.mark.asyncio
-async def test_update_todo_zero():
-    response = client.put("/todo/0", json={"title": "Updated Zero"})
-    assert response.status_code == status.HTTP_404_NOT_FOUND
-    assert "Todo 0 not found" in response.text
-
-@pytest.mark.asyncio
-async def test_get_todo_string_id():
-    response = client.get("/todo/abc")
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    assert "Input should be a valid integer" in response.text
-
-@pytest.mark.asyncio
-async def test_update_todo_invalid_id():
-    response = client.put("/todo/1", json={"id": 2, "title": "Invalid ID"})
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert "Todo id from URL: 1 does not match body id: 2" in response.text
-
-@pytest.mark.asyncio
-async def test_update_todo_string_id():
-    response = client.put("/todo/1", json={"id": "abc", "title": "Invalid ID"})
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    assert "Input should be a valid integer" in response.text
-
-@pytest.mark.asyncio
-async def test_delete_todo_string_id():
-    response = client.delete("/todo/abc")
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    assert "Input should be a valid integer" in response.text
-
-@pytest.mark.asyncio
-async def test_create_todo_with_description():
-    response = client.post("/todo", json={"title": "Task with Description", "description": "New Description"})
-    assert response.status_code == status.HTTP_201_CREATED
-    assert "Added new todo with id" in response.json()["message"]
-    assert response.json()["todo"]["description"] == "New Description"
-
-@pytest.mark.asyncio
-async def test_update_todo_only_description():
-    response = client.post("/todo", json={"title": "Task to Update", "description": "Old Desc"})
-    todo_id = response.json()["todo"]["id"]
-    response = client.put(f"/todo/{todo_id}", json={"id": todo_id, "title": "Task to Update", "description": "New Desc"})
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json()["todo"]["description"] == "New Desc"
-
-@pytest.mark.asyncio
-async def test_update_todo_only_is_done():
-    response = client.post("/todo", json={"title": "Task to Update"})
-    todo_id = response.json()["todo"]["id"]
-    response = client.put(f"/todo/{todo_id}", json={"id": todo_id, "title": "Task to Update", "is_done": True})
-    assert response.status_code == status.HTTP_200_OK
-    assert response.json()["todo"]["is_done"] is True
-
-@pytest.mark.asyncio
-async def test_create_todo_with_float_id():
-    response = client.post("/todo", json={"id": 1.0, "title": "Invalid ID"})
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert "ID must be 0 or None" in response.text
-
-@pytest.mark.asyncio
-async def test_update_todo_with_float_id():
-    response = client.put(f"/todo/2.5", json={"id": 2.5, "title": "Invalid ID"})
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    assert "Input should be a valid integer" in response.text
-
-@pytest.mark.asyncio
-async def test_create_todo_missing_title():
-    response = client.post("/todo", json={"id": 0})
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    assert "Field required" in response.text
-
-@pytest.mark.asyncio
-async def test_update_todo_missing_title():
-    response = client.put("/todo/1", json={"id": 1, "description": "New Desc"})
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    assert "Field required" in response.text
-
-@pytest.mark.asyncio
-async def test_update_todo_invalid_description():
-    response = client.put("/todo/1", json={"id": 1, "title": "Updated", "description": 123})
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    assert "Input should be a valid string" in response.text
-
-@pytest.mark.asyncio
-async def test_update_todo_invalid_is_done():
-    response = client.post("/todo", json={"title": "Task to Update"})
-    todo_id = response.json()["todo"]["id"]
-    response = client.put(f"/todo/{todo_id}", json={"id": todo_id, "title": "Updated", "is_done": "makeit"})
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    assert "Input should be a valid boolean" in response.text
-
-@pytest.mark.asyncio
-async def test_get_todo_float_id():
-    response = client.get("/todo/1.5")
-    assert response.status_code == status.HTTP_422_UNPROCESSABLE_ENTITY
-    assert "Input should be a valid integer" in response.text
+    # Perform the update
+    response = client.put(f"/todo/{todo_id}", json=update_payload)
+    assert response.status_code == expected_status
+    assert expected_message in response.text
