@@ -77,7 +77,7 @@ python3 main.py
 Alternate way of running:
 
 ```shell
-uvicorn main:app --reload
+uvicorn src.main:app --reload
 ```
 
 ## View Docs
