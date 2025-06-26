@@ -74,6 +74,9 @@ async def create_todo(todo: Todo, response: Response) -> TodoMessage:
 @app.get("/todo/{todo_id}", tags=[Tags.API])
 async def get_todo(todo_id: int, response: Response) -> TodoMessage:
     """Get a single todo"""
+    if todo_id < 1:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="ID must be a positive integer")
+
     for todo in todo_list.todos:
         if todo.id == todo_id:
             response.status_code = status.HTTP_200_OK
