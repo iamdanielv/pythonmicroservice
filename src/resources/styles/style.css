@@ -1,0 +1,35 @@
+body {
+    background-color: #EEE;
+    font-family: sans-serif;
+    width: 50%;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+h1 {
+    color: #023047;
+}
+
+
+ul li {
+    cursor: pointer;
+    padding: 1rem;
+    border-bottom: 2px solid #FFB703;
+    list-style: Circle;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+ul li::marker {
+    font-size: 4em;
+    vertical-align: middle;
+}
+
+ul li:last-child {
+    border-bottom: none;
+}
+
+.done {
+    text-decoration: line-through;
+    color: #555;
+    list-style: Disc;
+}

@@ -1,13 +1,16 @@
 """A Sample FastAPI Microservice"""
 
 import logging
-
-from fastapi import FastAPI, HTTPException, Response, status
+import os
 
 import uvicorn
+from fastapi import FastAPI, HTTPException, Request, Response, status
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from jinja2 import Environment, FileSystemLoader
 
-from src.config import Settings, LogConfig
-from src.models import Tags, TodoList, Todo, TodoMessage, DefaultMessage
+from src.config import LogConfig, Settings
+from src.models import DefaultMessage, Tags, Todo, TodoList, TodoMessage
 
 # Initialize configuration
 settings = Settings()
@@ -18,15 +21,40 @@ log_config.configure()
 logger = logging.getLogger("todo_app")
 
 app = FastAPI(title=settings.title, summary=settings.summary)
+app.mount(
+    "/styles",
+    StaticFiles(directory=os.path.join(os.getcwd(), "src/resources/styles")),
+    name="styles",
+)
+app.mount(
+    "/scripts",
+    StaticFiles(directory=os.path.join(os.getcwd(), "src/resources/scripts")),
+    name="scripts",
+)
 
 # Shared data (should be replaced with DB in production)
 todo_list = TodoList(
     title="Sample TODO List",
     todos=[
-        Todo(id=1, title="Install Python", is_done=True),
-        Todo(id=2, title="Create Microservice", is_done=False),
+        Todo(
+            id=1,
+            title="Setup Python",
+            description="Get your Python environment ready",
+            is_done=True,
+        ),
+        Todo(
+            id=2,
+            title="Build a Microservice",
+            description="something about building a microservice",
+            is_done=False,
+        ),
     ],
 )
+
+env = Environment(
+    loader=FileSystemLoader(os.path.join(os.getcwd(), "src/templates"))
+)
+template = env.get_template("index.html")
 
 
 # #########################
@@ -43,9 +71,8 @@ async def get_status():
 
 
 @app.get("/")
-async def root():
-    """Get for the root path, this is just a Hello World for now"""
-    return DefaultMessage(message="Hello World!")
+async def root(request: Request):
+    return HTMLResponse(content=template.render(todo_list=todo_list))
 
 
 @app.get("/todos", tags=[Tags.API])
@@ -65,7 +92,8 @@ async def create_todo(todo: Todo, response: Response) -> TodoMessage:
     else:
         logger.error("got an id = %s, NOT ALLOWED", todo.id)
         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST, detail="ID must be 0 or None"
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="ID must be 0 or None",
         )
 
     # we passed checks
@@ -92,25 +120,32 @@ async def get_todo(todo_id: int, response: Response) -> TodoMessage:
 
     # we iterated through the list and didn't find the requested id
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail=f"Todo {todo_id} not found"
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Todo {todo_id} not found",
     )
 
 
 # Update
 @app.put("/todo/{todo_id}", tags=[Tags.API])
-async def put_todo(todo_update: Todo, todo_id: int, response: Response) -> TodoMessage:
+async def put_todo(
+    todo_update: Todo, todo_id: int, response: Response
+) -> TodoMessage:
     """Update a single todo"""
     if todo_update.id != 0 and todo_id != todo_update.id:
-        logger.debug("Todo id %s does not match body id %s", todo_id, todo_update.id)
+        logger.debug(
+            "Todo id %s does not match body id %s", todo_id, todo_update.id
+        )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Todo id from URL: {todo_id} does not match body id: {todo_update.id}",
+            detail=f"Todo id from URL: {todo_id} does not match body id: "
+            f"{todo_update.id}",
         )
 
     for todo in todo_list.todos:
         if todo.id == todo_id:
             logger.debug("found a match for id %s, Updating", todo_id)
-            # we ignore the id from the body message and use the one passed in to the URL
+            # we ignore the id from the body message
+            # and use the one passed in to the URL
             # we do not allow updating/changing the id
             if todo_update.is_done is not None:
                 todo.is_done = todo_update.is_done
@@ -122,7 +157,8 @@ async def put_todo(todo_update: Todo, todo_id: int, response: Response) -> TodoM
 
     # we iterated through the list and didn't find the requested id
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail=f"Todo {todo_id} not found"
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Todo {todo_id} not found",
     )
 
 
@@ -139,7 +175,8 @@ async def delete_todo(todo_id: int, response: Response) -> TodoMessage:
 
     # we iterated through the list and didn't find the requested id
     raise HTTPException(
-        status_code=status.HTTP_404_NOT_FOUND, detail=f"Todo {todo_id} not found"
+        status_code=status.HTTP_404_NOT_FOUND,
+        detail=f"Todo {todo_id} not found",
     )
 
 

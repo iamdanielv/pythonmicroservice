@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/styles/style.css" />
+    <title>Todo List</title>
+</head>
+
+<body>
+    <h1>{{ todo_list.title }}</h1>
+    <ul>
+        {% for todo in todo_list.todos %}
+        <li {% if todo.is_done %}class="done" {% endif %}>
+            {{ todo.id }} - {{ todo.title }}
+            <p>{{ todo.description }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+    <script src="/scripts/script.js" type="text/javascript"></script>
+</body>
+
+</html>
