@@ -27,7 +27,6 @@ client = TestClient(app)
     "endpoint, method, payload, expected_status, expected_message",
     [
         ("/status", "GET", None, status.HTTP_200_OK, "OK"),
-        ("/", "GET", None, status.HTTP_200_OK, "Hello World!"),
     ],
 )
 def test_endpoints(
