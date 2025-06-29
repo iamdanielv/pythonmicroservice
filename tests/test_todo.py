@@ -1,3 +1,14 @@
+"""Tests for todos endpoint and status endpoints
+
+This module contains unit tests for the todos endpoint and status endpoints in our RESTful API. It covers:
+- Basic endpoint validation for /status and /
+- Todo retrieval (GET /todos)
+- Todo creation with parameter validation (POST /todo)
+- Todo retrieval and update with ID validation (GET/PUT /todo/{id})
+- Rrror handling for invalid payloads and IDs
+- Status code and response message verification for endpoints
+"""
+
 import sys
 from pathlib import Path
 
@@ -166,7 +177,6 @@ def test_update_todo(todo_id, payload, expected_status, expected_message):
     assert expected_message in response.text
 
 
-@pytest.mark.asyncio
 @pytest.mark.parametrize(
     "payload, expected_status, expected_message",
     [
@@ -194,7 +204,7 @@ def test_update_todo(todo_id, payload, expected_status, expected_message):
         ),
     ],
 )
-async def test_create_and_update_todo(payload, expected_status, expected_message):
+def test_create_and_update_todo(payload, expected_status, expected_message):
     # Create a new todo to update
     response = client.post("/todo", json={"title": "Todo with Description"})
     assert response.status_code == status.HTTP_201_CREATED
