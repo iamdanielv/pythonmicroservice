@@ -26,7 +26,7 @@ VENV_PYTHON := $(VENV)/bin/python
 QUIET_PIP := pip -q --exists-action i
 
 .DEFAULT_GOAL := help
-.PHONY: help env show-env clean test run
+.PHONY: help env show-env clean test run ruff
 
 define check_venv
 	printf "$(C_BLUE)$(VENV)$(T_RESET)"
@@ -121,8 +121,15 @@ clean: ##@ delete the .venv environment
 test: ##@ Run unit tests
 	@printf "Running $(C_YELLOW)unit tests$(T_RESET)...\n"
 	@pytest -v tests/
- 
 
 run: ##@ Run the application
 	@printf "$(C_BLUE)Running the application$(T_RESET)...\n"
 	@uvicorn src.main:app --reload
+
+ruff: ##@ Check code with ruff linter
+	@printf "Checking code with $(C_YELLOW)ruff$(T_RESET)...\n"
+	@printf "Running $(C_MAGENTA)format$(T_RESET)...\n"
+	@ruff format .
+	@printf "Running $(C_MAGENTA)check$(T_RESET)...\n"
+	@ruff check .
+
