@@ -1,7 +1,7 @@
 """Models for TODO API"""
 
 from enum import Enum
-from typing import List, Optional
+
 from pydantic import BaseModel, model_validator
 
 
@@ -16,10 +16,10 @@ class Tags(Enum):
 class Todo(BaseModel):
     """A Todo item"""
 
-    id: Optional[int] = 0
+    id: int | None = 0
     title: str
-    description: Optional[str] = ""
-    is_done: Optional[bool] = False
+    description: str | None = ""
+    is_done: bool | None = False
 
     @classmethod
     @model_validator(mode="before")
@@ -32,7 +32,7 @@ class Todo(BaseModel):
 class TodoMessage(BaseModel):
     """A Todo Message"""
 
-    todo: Optional[Todo]
+    todo: Todo | None
     message: str
 
 
@@ -40,7 +40,7 @@ class TodoList(BaseModel):
     """Holds a Todo List"""
 
     title: str
-    todos: List[Todo]
+    todos: list[Todo]
 
 
 class DefaultMessage(BaseModel):
