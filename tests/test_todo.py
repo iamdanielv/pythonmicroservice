@@ -15,8 +15,9 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import pytest
-from fastapi.testclient import TestClient
 from fastapi import status
+from fastapi.testclient import TestClient
+
 from src.main import app
 
 client = TestClient(app)
@@ -29,7 +30,9 @@ client = TestClient(app)
         ("/", "GET", None, status.HTTP_200_OK, "Hello World!"),
     ],
 )
-def test_endpoints(endpoint, method, payload, expected_status, expected_message):
+def test_endpoints(
+    endpoint, method, payload, expected_status, expected_message
+):
     response = client.request(method, endpoint, json=payload)
     assert response.status_code == expected_status
     assert response.json()["message"] == expected_message
@@ -47,7 +50,11 @@ async def test_get_todos():
 @pytest.mark.parametrize(
     "payload, expected_status, expected_message",
     [
-        ({"title": "New Task"}, status.HTTP_201_CREATED, "Added new todo with id"),
+        (
+            {"title": "New Task"},
+            status.HTTP_201_CREATED,
+            "Added new todo with id",
+        ),
         (
             {"id": 1, "title": "Invalid ID 1"},
             status.HTTP_400_BAD_REQUEST,
@@ -117,7 +124,12 @@ def test_create_todo(payload, expected_status, expected_message):
             "Input should be a valid integer",
             True,
         ),
-        (-1, status.HTTP_400_BAD_REQUEST, "ID must be a positive integer", True),
+        (
+            -1,
+            status.HTTP_400_BAD_REQUEST,
+            "ID must be a positive integer",
+            True,
+        ),
     ],
 )
 def test_get_todo(todo_id, expected_status, expected_message, fuzzy_match):
@@ -138,7 +150,12 @@ def test_get_todo(todo_id, expected_status, expected_message, fuzzy_match):
 @pytest.mark.parametrize(
     "todo_id, payload, expected_status, expected_message",
     [
-        (1, {"title": "Updated Task"}, status.HTTP_200_OK, "OK, updated Todo 1"),
+        (
+            1,
+            {"title": "Updated Task"},
+            status.HTTP_200_OK,
+            "OK, updated Todo 1",
+        ),
         (
             1,
             {"id": 2, "title": "URL and body ID mismatch"},
@@ -190,13 +207,21 @@ def test_update_todo(todo_id, payload, expected_status, expected_message):
             status.HTTP_422_UNPROCESSABLE_ENTITY,
             "Field required",
         ),
-        ({"is_done": True}, status.HTTP_422_UNPROCESSABLE_ENTITY, "Field required"),
+        (
+            {"is_done": True},
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Field required",
+        ),
         (
             {"title": "Todo with Description", "is_done": True},
             status.HTTP_200_OK,
             "OK, updated Todo",
         ),
-        ({"is_done": "makeit"}, status.HTTP_422_UNPROCESSABLE_ENTITY, "Field required"),
+        (
+            {"is_done": "makeit"},
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "Field required",
+        ),
         (
             {"title": "Todo with Description", "is_done": "makeit"},
             status.HTTP_422_UNPROCESSABLE_ENTITY,
