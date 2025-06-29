@@ -1,11 +1,12 @@
 """Tests for todos endpoint and status endpoints
 
-This module contains unit tests for the todos endpoint and status endpoints in our RESTful API. It covers:
+This module contains unit tests for the todos endpoint and status endpoints
+ in our RESTful API. It covers:
 - Basic endpoint validation for /status and /
 - Todo retrieval (GET /todos)
 - Todo creation with parameter validation (POST /todo)
 - Todo retrieval and update with ID validation (GET/PUT /todo/{id})
-- Rrror handling for invalid payloads and IDs
+- Error handling for invalid payloads and IDs
 - Status code and response message verification for endpoints
 """
 

@@ -184,6 +184,8 @@ if __name__ == "__main__":
     RELOAD = not settings.is_prod
 
     print(
-        f"App: {settings.title} -- Host: {settings.host}:{settings.port} Reload: {RELOAD}"
+        f"App: {settings.title}"
+        f" -- Host: {settings.host}:{settings.port} "
+        f"Reload: {RELOAD}"
     )
     uvicorn.run(app, host=settings.host, port=settings.port, reload=RELOAD)
