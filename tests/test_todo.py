@@ -62,8 +62,8 @@ async def test_get_todos():
         ),
         (
             {"id": -1, "title": "Invalid ID -1"},
-            status.HTTP_400_BAD_REQUEST,
-            "ID must be 0 or None",
+            status.HTTP_422_UNPROCESSABLE_ENTITY,
+            "ID must be 0 or greater",
         ),
         (
             {"id": "invalid", "title": "Invalid ID invalid"},

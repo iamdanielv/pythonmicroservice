@@ -2,8 +2,10 @@
 
 from logging.config import dictConfig
 
+from pydantic_settings import BaseSettings
 
-class Settings:
+
+class Settings(BaseSettings):
     """Settings for TODO App"""
 
     title: str = "Todo API"

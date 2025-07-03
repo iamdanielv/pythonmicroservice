@@ -2,7 +2,7 @@
 
 from enum import Enum
 
-from pydantic import BaseModel, model_validator
+from pydantic import BaseModel, field_validator
 
 
 class Tags(Enum):
@@ -21,12 +21,12 @@ class Todo(BaseModel):
     description: str | None = ""
     is_done: bool | None = False
 
+    @field_validator("id")
     @classmethod
-    @model_validator(mode="before")
-    def check_id(cls, values: dict) -> dict:
-        if values.get("id") is not None and values.get("id") < 0:
+    def id_must_be_positive(cls, v: int | None) -> int | None:
+        if v is not None and v < 0:
             raise ValueError("ID must be 0 or greater")
-        return values
+        return v
 
 
 class TodoMessage(BaseModel):
